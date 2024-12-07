@@ -1,8 +1,9 @@
 const Task = require("../models/task.model");
 const paginationHelper = require("../../../helpers/pagination");
+const searchHelper =  require("../../../helpers/search");
 // [GET] /API/v1/task
 module.exports.index = async (req, res) =>{
-    // create object find to store deleted and add status if have status
+    // create object find to stoSre deleted and add status if have status
     const find = {
         deleted: false,
     }
@@ -21,7 +22,12 @@ module.exports.index = async (req, res) =>{
         countTasks
     );
     // End pagination
-
+    // Search
+    let objectSearch = searchHelper(req.query);
+    if(req.query.keyword){
+        find.title = objectSearch.regex;
+    }
+    // End Search
     // Sort create object sort with sortKey is value param and sortValue is value parameter
     // console.log(req.query);
     const sort = {};
@@ -50,4 +56,66 @@ module.exports.detail = async (req, res) => {
     {
         res.json("Không tìm thấy");
     }
+}
+
+// [PATCH] /API/v1/tasks/change-status/:id
+module.exports.changeStatus = async (req, res) => {
+    try{
+        const id = req.params.id;
+        const status = req.body.status;
+        await Task.updateOne({
+            _id: id,
+        
+        },{
+            status: status
+        });
+        console.log(req.body);
+        res.json({
+            code: 200,
+            message: "Thay đổi trạng thái thành công"
+        });
+    }catch(err){
+        res.json({
+            code: 400,
+            message: "Không tồn tại"
+        });
+    }
+    
+}
+
+
+// [PATCH] /API/v1/tasks/change-multi
+module.exports.changeMulti = async (req, res) => {
+    try{
+        const {ids, key, value} = req.body;
+        console.log(ids);
+        console.log(key);
+        console.log(value);
+        switch(key){
+            case "status":
+                await Task.updateMany({
+                    _id: {$in: ids}
+                },{
+                    status: value
+                });
+                res.json({
+                    code: 200,
+                    message: "Thay đổi trạng thái thành công"
+                });
+                break;
+            default:
+                res.json({
+                    code: 400,
+                    message: "Không hỗ trợ thay đổi trạng thái"
+                });
+                break;  
+        }
+        
+    }catch(err){
+        res.json({
+            code: 400,
+            message: "Không tồn tại"
+        });
+    }
+    
 }
