@@ -13,7 +13,7 @@ module.exports.index = async (req, res) =>{
     // Pagination 
     let initPagination = {
         currentPage: 1,
-        limitItems: 2,
+        limitItems: 10,
     };
     const countTasks = await Task.countDocuments(find);
     const objectPagination = paginationHelper(
@@ -134,6 +134,7 @@ module.exports.changeMulti = async (req, res) => {
 // [POST] /API/v1/tasks/create
 module.exports.create = async (req, res) =>{
     try{
+        req.body.createdBy = req.user.id;
         const task = new Task(req.body);
         const data = await task.save();
         res.json({

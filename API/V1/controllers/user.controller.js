@@ -89,7 +89,7 @@ module.exports.forgotPassword = async (req, res) =>{
     const objectForgotPassword ={
         email: email,
         otp, otp,
-        exprieAt: Date.now() + timeExprise*60,
+        exprieAt: Date.now() + timeExprise*60*1000,
     };
     const forgotPassword = new ForgotPassword(objectForgotPassword);
     await forgotPassword.save();
@@ -164,17 +164,24 @@ module.exports.resetPassword = async (req, res) => {
 }
 
 // [GET] /api/v1/user/detail
-module.exports.detail = async (req, res) => {
-    const token = req.cookies.token;
-    console.log(token);
-    const user = await User.findOne({
-        token: token,
-        deleted: false
-    }).select("-password -token");
+module.exports.detail = async (req, res) => {    
     res.json({
         code: 200,
         message: "Was successful",
-        info: user
+        info: req.user
+
+    });
+}
+
+// [GET] /api/v1/user/list
+module.exports.list = async (req, res) => {    
+    const users = await User.find({
+        deleted: false
+    }).select("fullName email");
+    res.json({
+        code: 200,
+        message: "Was successful",
+        users: users
 
     });
 }
