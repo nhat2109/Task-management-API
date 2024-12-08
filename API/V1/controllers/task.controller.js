@@ -5,7 +5,12 @@ const searchHelper =  require("../../../helpers/search");
 module.exports.index = async (req, res) =>{
     // create object find to stoSre deleted and add status if have status
     const find = {
+        $or: [
+            {createdBy: req.user.id},
+            {listUser: req.user.id}
+        ],
         deleted: false,
+
     }
     if(req.query.status){
         find.status = req.query.status;
